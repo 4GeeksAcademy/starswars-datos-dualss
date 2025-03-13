@@ -6,25 +6,51 @@ from eralchemy2 import render_er
 
 Base = declarative_base()
 
-class Person(Base):
-    __tablename__ = 'person'
-    # Here we define columns for the table person
-    # Notice that each column is also a normal Python instance attribute.
+class Users(Base):
+    __tablename__ = 'users'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    nameuser: Mapped[str] = mapped_column(nullable=False)
+    email: Mapped[str] = mapped_column(nullable=False)
+    password: Mapped[str] = mapped_column(nullable=False)
+    favorites: Mapped[list["Favorites"]] = relationship(back_populates="users")
+
+class People(Base):
+    __tablename__ = 'people'
     id: Mapped[int] = mapped_column(primary_key=True)
     name: Mapped[str] = mapped_column(nullable=False)
-    address: Mapped["Address"] = relationship(back_populates="person")
+    birth_year: Mapped[int] = mapped_column(nullable=False)
+    mass: Mapped[float] = mapped_column(nullable=False)
+    favorites: Mapped[list["Favorites"]] = relationship(back_populates="people")
 
-
-class Address(Base):
-    __tablename__ = 'address'
-    # Here we define columns for the table address.
-    # Notice that each column is also a normal Python instance attribute.
+class Planets(Base):
+    __tablename__ = 'planets'
     id: Mapped[int] = mapped_column(primary_key=True)
-    street_name: Mapped[str]
-    street_number: Mapped[str]
-    post_code: Mapped[str] = mapped_column(nullable=False)
-    person_id: Mapped[int] = mapped_column(ForeignKey("person.id"))
-    person: Mapped["Person"] = relationship(back_populates="address")
+    name: Mapped[str] = mapped_column(nullable=False)
+    diameter: Mapped[int] = mapped_column(nullable=False)
+    population: Mapped[int] = mapped_column(nullable=False)
+    favorites: Mapped[list["Favorites"]] = relationship(back_populates="planets")
+
+class Starships(Base):
+    __tablename__ = 'starships'
+    id: Mapped[int] = mapped_column(primary_key=True)
+    name: Mapped[str] = mapped_column(nullable=False)
+    model: Mapped[str] = mapped_column(nullable=False)
+    passengers: Mapped[int] = mapped_column(nullable=False)
+    favorites: Mapped[list["Favorites"]] = relationship(back_populates="starships")
+    
+class Favorites(Base):
+    __tablename__ = "favorites"
+    people_id: Mapped[int] = mapped_column(ForeignKey("people.id"), primary_key=True)
+    planets_id: Mapped[int] = mapped_column(ForeignKey("planets.id"), primary_key=True, nullable=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), primary_key=True)
+    starships_id: Mapped[int] = mapped_column(ForeignKey("starships.id"), primary_key=True)
+
+    # Relaciones con las tablas principales
+    people: Mapped["People"] = relationship(back_populates="favorites")
+    planets: Mapped["Planets"] = relationship(back_populates="favorites")
+    user: Mapped["Users"] = relationship(back_populates="favorites")
+    starships: Mapped["Starships"] = relationship(back_populates="favorites")
+
 
     def to_dict(self):
         return {}
